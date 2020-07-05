@@ -1,0 +1,54 @@
+class Cource {
+    field Circle circle;
+
+    constructor Cource new() {
+        do draw();
+        return this;
+    }
+
+    method void draw() {
+        do Screen.setColor(true);
+        // 上の線を描画
+        do Screen.drawLine(64, 0, 64, 200);    // top line 1
+        do Screen.drawLine(192, 0, 192, 200);  // top line 2
+        do Screen.drawLine(320, 0, 320, 200);  // top line 3
+        do Screen.drawLine(448, 0, 448, 200);  // top line 4
+        // 下の線を描画
+        do Screen.drawLine(128, 56, 128, 255); // bottom line 1
+        do Screen.drawLine(256, 56, 256, 255); // bottom line 2
+        do Screen.drawLine(384, 56, 384, 255); // bottom line 3
+        // GOALを描画
+        do Output.moveCursor(0, 58);
+        do Output.printString("GOAL");
+        return;
+    }
+
+//    method void collisionDirection(circle Acircle) {
+//        var Array cource_position;
+//        var Array cource_start_position;
+//        var Array cource_end_position;
+//        var Array circle_top_positon;
+//        var Array circle_bottom_positon;
+//        var Array circle_left_positon;
+//        var Array circle_right_positon;
+//        var boolean exit;
+//        let circle = Acircle;
+//        let circle_top_positon = circle.getCircleTop();
+//        let circle_bottom_positon = circle.getCircleBottom();
+//        let circle_left_positon = circle.getCircleLeft();
+//        let circle_right_positon = circle.getCircleRight();
+//        let exit = false;
+//
+//        // top line 1
+//        let cource_start_position = Array.new(64, 0);
+//        let cource_end_position = Array.new(64, 200);
+//        let cource_position = cource_start_position;
+//        while (~(cource_position = cource_end_position)) {
+//            if (cource_position = circle_top_positon) { do Sys.halt(); }
+//            // コース座標インクリメント
+//            let cource_position[1] = cource_position[1] + 1;
+//        }
+//
+//        return;
+//    }
+}

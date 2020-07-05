@@ -1,0 +1,47 @@
+class CollisionDirection {
+    field Circle circle;
+
+    constructor CollisionDirection new(circle Acircle) {
+        let circle = Acircle;
+        do collisionDirection();
+        return this;
+    }
+
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    method void collisionDirection() {
+        var Array cource_position;
+        var Array cource_start_position;
+        var Array cource_end_position;
+        var Array circle_top_positon;
+        var Array circle_bottom_positon;
+        var Array circle_left_positon;
+        var Array circle_right_positon;
+        var boolean exit;
+       // let circle_top_positon = circle.getCircleTop();
+       // let circle_bottom_positon = circle.getCircleBottom();
+       // let circle_left_positon = circle.getCircleLeft();
+        let circle_right_positon = circle.getCircleRight();
+        let exit = false;
+
+        // top line 1
+        let cource_start_position = Array.new(64, 0);
+        let cource_end_position = Array.new(64, 200);
+        let cource_position = cource_start_position;
+        while (~(cource_position[1] = cource_end_position[1])) {
+            if (cource_position = circle_right_positon) { do Sys.halt(); }
+            // コース座標インクリメント
+            let cource_position[1] = cource_position[1] + 1;
+        }
+
+        // Arrayオブジェクトのメモリ領域破棄
+        do Memory.deAlloc(circle_right_positon);
+        do Memory.deAlloc(cource_start_position);
+        do Memory.deAlloc(cource_end_position);
+        do Memory.deAlloc(cource_position);
+        return;
+    }
+}

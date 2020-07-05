@@ -1,0 +1,25 @@
+class Cource {
+    field Circle circle;
+
+    constructor Cource new() {
+        do draw();
+        return this;
+    }
+
+    method void draw() {
+        do Screen.setColor(true);
+        // 上の線を描画
+        do Screen.drawLine(64, 0, 64, 200);    // top line 1
+        do Screen.drawLine(192, 0, 192, 200);  // top line 2
+        do Screen.drawLine(320, 0, 320, 200);  // top line 3
+        do Screen.drawLine(448, 0, 448, 200);  // top line 4
+        // 下の線を描画
+        do Screen.drawLine(128, 56, 128, 255); // bottom line 1
+        do Screen.drawLine(256, 56, 256, 255); // bottom line 2
+        do Screen.drawLine(384, 56, 384, 255); // bottom line 3
+        // GOALを描画
+        do Output.moveCursor(0, 58);
+        do Output.printString("GOAL");
+        return;
+    }
+}

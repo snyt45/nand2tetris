@@ -1,0 +1,175 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/05/CPU.hdl
+
+/**
+ * The Hack CPU (Central Processing unit), consisting of an ALU,
+ * two registers named A and D, and a program counter named PC.
+ * The CPU is designed to fetch and execute instructions written in 
+ * the Hack machine language. In particular, functions as follows:
+ * Executes the inputted instruction according to the Hack machine 
+ * language specification. The D and A in the language specification
+ * refer to CPU-resident registers, while M refers to the external
+ * memory location addressed by A, i.e. to Memory[A]. The inM input 
+ * holds the value of this location. If the current instruction needs 
+ * to write a value to M, the value is placed in outM, the address 
+ * of the target location is placed in the addressM output, and the 
+ * writeM control bit is asserted. (When writeM==0, any value may 
+ * appear in outM). The outM and writeM outputs are combinational: 
+ * they are affected instantaneously by the execution of the current 
+ * instruction. The addressM and pc outputs are clocked: although they 
+ * are affected by the execution of the current instruction, they commit 
+ * to their new values only in the next time step. If reset==1 then the 
+ * CPU jumps to address 0 (i.e. pc is set to 0 in next time step) rather 
+ * than to the address resulting from executing the current instruction. 
+ */
+
+CHIP CPU {
+
+    IN  inM[16],         // M value input  (M = contents of RAM[A])
+        instruction[16], // Instruction for execution
+        reset;           // Signals whether to re-start the current
+                         // program (reset==1) or continue executing
+                         // the current program (reset==0).
+
+    OUT outM[16],        // M value output
+        writeM,          // Write to M? 
+        addressM[15],    // Address in data memory (of M)
+        pc[15];          // address of next instruction
+
+    PARTS:
+    // instruction（命令メモリからフェッチ）
+    // @value A命令: 0vvv vvvv vvvv vvvv
+    // @value C命令: 111a cccc ccdd djjj
+    // @bit_mapping selInstruction=instruction[15] A命令 or C命令の判別
+    // @bit_mapping a=instruction[12]              Aレジスタ or Mレジスタ(Memory[A])の判別
+    // @bit_mapping c=instruction[6..11]           ALUの演算方法の判別
+    // @bit_mapping d1=instruction[5]              Aレジスタに読み込み or 書き込みの判別
+    // @bit_mapping d2=instruction[4]              Dレジスタに読み込み or 書き込みの判別
+    // @bit_mapping d3=instruction[3]              Mレジスタに読み込み or 書き込みの判別
+    // @bit_mapping j1=instruction[2]              JUMPさせる条件の判別
+    // @bit_mapping j2=instruction[1]              JUMPさせる条件の判別
+    // @bit_mapping j3=instruction[0]              JUMPさせる条件の判別
+
+    // A命令 or C命令の判別
+    // @a   A命令
+    // @b   C命令の演算結果
+    // @sel selInstruction
+    // @out A命令 または C命令の演算結果
+    Mux16(a=instruction, b=aluout, sel=instruction[15], out=aIn);
+
+    ////////////////////
+    // Aレジスタ
+    ////////////////////
+
+    // Aレジスタのload
+    // load判定①: selInstructionがA命令の時、Aレジスタに書き込む(load=1)
+    // load判定②: selInstructionがC命令の時、d1が1ならAレジスタに書き込む(load=1)
+    // ①と②のどちらかが1であれば、Aレジスタに書き込む
+    // 上記の判定を行った出力をAレジスタのload入力として使用
+    Not(in=instruction[15], out=aLoad1);
+    Or(a=aLoad1, b=instruction[5], out=aLoad);
+
+    // Aレジスタに読み込み or 書き込みの判別
+    // @in   A命令 or C命令の演算結果
+    // @load d1
+    // @out  読み込み out(t)=out(t-1) / 書き込み out(t)=in(t-1)
+    ARegister(in=aIn, load=aLoad, out=a, out[0..14]=addressM);
+
+    // ALUのyへの入力として、Aレジスタ or Mレジスタ(Memory[A])の判別
+    // @a   Aレジスタの出力
+    // @b   Mレジスタの出力
+    // @sel a
+    // @out Aレジスタの出力 or Mレジスタの出力
+    Mux16(a=a, b=inM, sel=instruction[12], out=am);
+
+    ////////////////////
+    // Dレジスタ
+    ////////////////////
+
+    // Dレジスタのload
+    // load判定: selInstructionがC命令 かつ d2が1ならDレジスタに書き込む(load=1)
+    // 上記の判定を行った出力をDレジスタのload入力として使用
+    And(a=instruction[15], b=instruction[4], out=dLoad);
+
+    // Dレジスタに読み込み or 書き込みの判別
+    // @in   ALUの演算結果
+    // @load d1
+    // @out  読み込み out(t)=out(t-1) / 書き込み out(t)=in(t-1)
+    DRegister(in=aluout, load=dLoad, out=d);
+
+    ////////////////////
+    // ALU
+    ////////////////////
+
+    // ALUで演算
+    // @x   Dレジスタの出力
+    // @y   Aレジスタの出力 or Mレジスタの出力
+    // @zx  c1
+    // @nx  c2
+    // @zy  c3
+    // @ny  c4
+    // @f   c5
+    // @no  c6
+    // @out ALUの演算結果
+    // @zr  out=0 True
+    // @ng  out<0 True
+    ALU(
+        x=d,
+        y=am,
+        
+        zx=instruction[11],
+        nx=instruction[10],
+        zy=instruction[9],
+        ny=instruction[8],
+        f=instruction[7],
+        no=instruction[6],
+        
+        out=aluout,
+        out=outM,
+        
+        zr=zr,
+        ng=ng
+        );
+    
+    // Mレジスタに書き込み
+    // 判定: selInstructionがC命令 かつ d3が1ならMレジスタに書き込む
+    And(a=instruction[15], b=instruction[3], out=writeM);
+
+    ////////////////////
+    // pc
+    ////////////////////
+
+    // JUMP判定①: j1が1 かつ ALUの演算結果が負ならTrueとする
+    And(a=instruction[2], b=ng, out=j1True);
+    // JUMP判定②: j2が1 かつ ALUの演算結果が0ならTrueとする
+    And(a=instruction[1], b=zr, out=j2True);
+    // JUMP判定③: j3が1 かつ ALUの演算結果が正ならTrueとする
+    // 正判定: !(ng+zr)
+    Or(a=ng, b=zr, out=notPlus);
+    Not(in=notPlus, out=plus);
+    And(a=instruction[0], b=plus, out=j3True);
+
+    // JUMP条件の判定
+    Or(a=j1True, b=j2True, out=j12True);
+    Or(a=j12True, b=j3True, out=j123True);
+
+    // pcLoad: カウンタアドレスを上書きする
+    // JUMP判定①、②、③のどれかが成立 かつ C命令なら JUMP
+    // つまり、Aレジスタで指定された命令メモリのアドレスに移動(pcLoad=1)
+    And(a=j123True, b=instruction[15], out=pcLoad);
+
+    // pcInc: カウンタをインクリメントする
+    // pcload=1なら、pcInc=0
+    // pcload=0なら、pcInc=1
+    Not(in=pcLoad, out=pcInc);
+
+    PC(
+        in=a,
+        inc=pcInc,
+        load=pcLoad,
+        reset=reset,
+        out[0..14]=pc
+    );
+}

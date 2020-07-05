@@ -1,0 +1,132 @@
+class Circle {
+    field int x, y;
+    field int size;
+
+    constructor Circle new(int Ax, int Ay, int Asize) {
+        let x = Ax;
+        let y = Ay;
+        let size = Asize;
+        do draw();
+        return this;
+    }
+
+    method void draw() {
+        do Screen.setColor(true);
+        do Screen.drawCircle(x, y, size);
+        return;
+    }
+
+    method void moveUp() {
+        // 縦-半径が0より大きければ、上に1マス移動
+        if ((y - size) > 0) {
+           // 円を削除
+           do Screen.setColor(false);
+           do Screen.drawCircle(x, y, size);
+           // 1マス上に円を描画
+           let y = y - 1;
+           do Screen.setColor(true);
+           do Screen.drawCircle(x, y, size);
+        }
+        return;
+    }
+
+    method void moveDown() {
+        // 縦+半径が254より小さければ、下に1マス移動
+        if ((y + size) < 254) {
+           // 円を削除
+           do Screen.setColor(false);
+           do Screen.drawCircle(x, y, size);
+           // 1マス下に円を描画
+           let y = y + 1;
+           do Screen.setColor(true);
+           do Screen.drawCircle(x, y, size);
+        }
+        return;
+    }
+
+    method void moveLeft() {
+        // 横-半径が0より大きければ、左に1マス移動
+        if ((x - size) > 0) {
+           // 円を削除
+           do Screen.setColor(false);
+           do Screen.drawCircle(x, y, size);
+           // 1マス左に円を描画
+           let x = x - 1;
+           do Screen.setColor(true);
+           do Screen.drawCircle(x, y, size);
+        }
+        return;
+    }
+
+    method void moveRight() {
+        // 横+半径が511より小さければ、右に1マス移動
+        if ((x + size) < 511) {
+           // 円を削除
+           do Screen.setColor(false);
+           do Screen.drawCircle(x, y, size);
+           // 1マス右に円を描画
+           let x = x + 1;
+           do Screen.setColor(true);
+           do Screen.drawCircle(x, y, size);
+        }
+        return;
+    }
+
+    // 円の上の頂点の座標を取得
+    method Array getCircleTop() {
+        var int x_position;
+        var int y_position;
+        var Array circletop;
+        let x_position = x;
+        let y_position = y - size;
+        let circletop = Array.new(x_position, y_position);
+        return circletop;
+    }
+
+    // 円の下の頂点の座標を取得
+    method Array getCircleBottom() {
+        var int x_position;
+        var int y_position;
+        var Array circlebottom;
+        let x_position = x;
+        let y_position = y + size;
+        let circlebottom = Array.new(x_position, y_position);
+        return circlebottom;
+    }
+
+    // 円の左の頂点の座標を取得
+    method Array getCircleLeft() {
+        var int x_position;
+        var int y_position;
+        var Array circleleft;
+        let x_position = x - size;
+        let y_position = y;
+        let circleleft = Array.new(x_position, y_position);
+        return circleleft;
+    }
+
+    // 円の右の頂点の座標を取得
+    method Array getCircleRight() {
+        var int x_position;
+        var int y_position;
+        var Array circleright;
+        let x_position = x + size;
+        let y_position = y;
+        let circleright = Array.new(x_position, y_position);
+        return circleright;
+    }
+
+
+
+    // デバッグ用
+    method int getX() {
+        return x;
+    }
+
+    method int getY() {
+        return y;
+    }
+    method int getSize() {
+        return size;
+    }
+}
